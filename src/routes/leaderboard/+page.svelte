@@ -1,6 +1,5 @@
 <script lang="ts">
-  import config from '$lib/config.json';
-  import { onMount } from 'svelte';
+  import type { PageData } from './$types';
 
   interface LeaderboardEntry {
     id: string;
@@ -8,39 +7,10 @@
     score: number;
   }
 
-  let leaderboardData: LeaderboardEntry[] = [];
-  let loading: boolean = true;
-  let error: string | null = null;
+  export let data: PageData;
 
-  const CACHE_KEY = 'leaderboardData';
-  const CACHE_TTL = 7200000; // 2 hours
-
-  onMount(async () => {
-    try {
-      const cached = sessionStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (Date.now() - parsed.timestamp < CACHE_TTL) {
-          console.log('Using cached data');
-          leaderboardData = parsed.data;
-          loading = false;
-          return;
-        }
-      }
-
-      const response = await fetch(config.API_BASE + '/mc/leaderboards/XP/ALL_TIME');
-      const data: LeaderboardEntry[] = await response.json();
-      // Uncomment below to debug
-      // console.log('API Response:', data);
-      leaderboardData = data;
-      sessionStorage.setItem(CACHE_KEY, JSON.stringify({ data, timestamp: Date.now() }));
-    } catch (err) {
-      error = 'Failed to load leaderboard data';
-      console.error(err);
-    } finally {
-      loading = false;
-    }
-  });
+  const leaderboardData = (data.leaderboard ?? []) as LeaderboardEntry[];
+  const error = data.error;
 </script>
 
 <svelte:head>
@@ -53,12 +23,7 @@
     <p class="text-base-content/90">The highest ranked players on Warzone.</p>
   </hgroup>
   <div class="divider"></div>
-  {#if loading}
-    <div class="text-center">
-      <span class="loading loading-spinner loading-xl text-primary"></span>
-      <p>Loading leaderboard...</p>
-    </div>
-  {:else if error}
+  {#if error}
     <p class="text-center text-error">{error}</p>
   {:else}
     <div class="overflow-x-auto">
