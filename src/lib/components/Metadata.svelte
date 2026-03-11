@@ -28,6 +28,4 @@
 
   <meta name="twitter:card" content="summary" />
   <meta name="twitter:site" content={`@${config.TWITTER}`} />
-  <meta name="twitter:title" content={fullTitle} />
-  <meta name="twitter:description" content={resolvedDescription} />
 </svelte:head>
